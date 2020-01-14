@@ -273,3 +273,77 @@ having count(deptno)>=6;
 select *
 from emp
 where to_char(hiredate, 'MM') = '12';
+
+--join: 원하는 데이터가 여러 테이블에 분산되어 있는 경우에 테이블간의 특정 컬럼(공유컬럼)을 이용하여 데이터를 조회하는 방법
+--종류1: inner 조인 - 조건에 일치하는 레코드만 출력, outer 조인 - 조건이 일치하지 않아도 출력
+--종류2: 오라클 조인, ANSI 조인
+--제약조건(constraints) -> 테이블에 저장되는 데이터가 결점이 없게 해야 함(무결성 -> 하나의 결점만 있더라도 나머지 데이터를 모두 믿을 수 없기 때문)
+-- -> 컬럼에 제약 조건을 걸어서 데이터 조건부 저장
+-- => 1. 기본키 제약조건(primary key): 레코드 식별용, 중복불가, 반드시 값 존재(unique + not null)
+--    2. not null 제약조건(not null): 기본적으로 컬럼에는 null 값이 저장되는데 not null로 반드시 값을 가지게 설정
+--    3. unique 제약조건(unique): 유일한 값을 갖게 설정, 중복불가, null도 됨
+--    4. check 제약조건(check): 특정값만 저장하도록 지정 ex)성별 -> gender in ('남', '여')
+--    5. 외래키(참조키) 제약조건(foreign key): 하나의 테이블을 여러 테이블로 나눠 저장할 때 나누어진 테이블의 관계 설정(마스터 테이블이 가진 값만)
+--             (emp테이블(차일드 테이블) -deptno(외래키)-> dept테이블(마스터 테이블, 받는 컬럼(deptno, 이름이 달라도 됨)은 기본키 또는 유니크))
+--              => 조인
+
+select *
+from user_constraints;
+-- p -> 기본키, r(reference) -> 참조키
+
+--1. 오라클 조인: equi 조인 -> = 사용
+select *
+from emp, dept
+where emp.deptno = dept.deptno;
+
+select empno, dept.deptno, ename, dname, loc
+from emp, dept
+where emp.deptno = dept.deptno;
+
+select *
+from emp, dept
+where emp.deptno = dept.deptno and emp.sal > 3000;
+-- 조인 조건 and 검색 조건 -> 필터링 가능
+
+--2. 오라클 조인: non equi 조인 -> 범위
+select *
+from emp, salgrade
+where sal between losal and hisal;
+
+--3. 오라클 조인: 조건없이 조인(카티션 곱) -> emp데이터 12 * dept데이터 4 = 48 쓰레기 데이터
+--         -> 테이블이 n개이면 n-1의 조인을 해줘야 카티션 곱을 방지
+select *
+from emp, dept;
+
+--4. 오라클 조인: outer 조인 -> (+)로 누락된 데이터를 가진 가상의 레코드를 만들어 조인
+
+select *
+from emp, dept
+where emp.deptno(+) = dept.deptno;
+
+--1. ANSI 조인
+select *
+from emp join dept using(deptno);
+
+select *
+from emp join dept
+on emp.deptno = dept.deptno
+where sal > 3000;
+
+select *
+from emp join salgrade
+on sal between losal and hisal;
+
+--2. ANSI 조인: outer 조인 -> A left, right, full outer join B
+insert into emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(9999,'홍길동','CLERK', 7839, sysdate, 600, null, null);
+commit;
+
+select *
+from emp left outer join dept using(deptno);
+
+select *
+from emp right outer join dept using(deptno);
+
+select *
+from emp full outer join dept using(deptno);
