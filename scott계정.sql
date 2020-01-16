@@ -347,3 +347,38 @@ from emp right outer join dept using(deptno);
 
 select *
 from emp full outer join dept using(deptno);
+
+--바인드 변수 :xxx -> 값을 바꿔서 넣을 수 있다
+select *
+from dept
+where deptno = :xxx;
+
+--데이터 저장
+--insert into 테이블명(컬럼명, 컬럼명)
+--values (값, 값)
+insert into dept (deptno, dname, loc)
+values (50, '개발', '제주');
+commit;
+
+--업데이트
+--update 테이블명
+--set 컬럼명=값, 컬럼명=값
+--where 조건식;  -> 확정할려면 commit, 다시 되돌리려면 roolback
+update dept
+set dname = 'DEVELOPER', loc = 'JEJU'
+where deptno = 50;
+commit;
+
+update dept
+set dname = 'DEVELOPER', loc = 'JEJU';
+
+rollback;
+
+--삭제
+--delete from 테이블명 where 조건식;
+delete from dept
+where deptno = 3;
+commit;
+
+select *
+from dept;
